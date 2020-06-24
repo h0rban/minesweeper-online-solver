@@ -1,8 +1,8 @@
 DRIVER_LINK = 'https://sites.google.com/a/chromium.org/chromedriver/downloads'
 DRIVER_PATH = '/Users/h0rban/PycharmProjects/MineSweeperOnlineSolver/chromedriver'
-DIFFICULTIES = {'beginner': (9, 9, 10, 'http://minesweeperonline.com/#beginner'),
-                'intermediate': (16, 16, 40, 'http://minesweeperonline.com/#intermediate'),
-                'expert': (16, 30, 99, 'http://minesweeperonline.com/')}
+DIFFICULTIES = [(9, 9, 10, 'http://minesweeperonline.com/#beginner'),
+                (16, 16, 40, 'http://minesweeperonline.com/#intermediate'),
+                (16, 30, 99, 'http://minesweeperonline.com/')]
 REPS = {'square blank': '_',
         'square bombflagged': 'f',
         'square open0': 0,

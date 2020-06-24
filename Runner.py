@@ -1,3 +1,3 @@
 from Board import Board
 
-Board('beginner').play()
+Board(difficulty=1).play()
