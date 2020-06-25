@@ -1,3 +1,3 @@
 from Board import Board
 
-Board(difficulty=1).play()
+Board(difficulty=3, log=True).play()

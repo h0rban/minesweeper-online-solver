@@ -35,4 +35,4 @@ class Posn:
 
     # returns a string representation of Cartesian coordinates
     def coordinates(self) -> str:
-        return f'({self.col}, {self.row})'
+        return f'({self.col + 1}, {self.row + 1})'

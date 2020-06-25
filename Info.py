@@ -14,3 +14,4 @@ REPS = {'square blank': '_',
         'square open6': 6,
         'square open7': 7,
         'square open8': 8}
+LOG_GAME_RESET = '\n---------------------RESETTING GAME------------------------------\n\n\n'
