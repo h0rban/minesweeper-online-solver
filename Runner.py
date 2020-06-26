@@ -1,3 +1,4 @@
 from Board import Board
 
-Board(difficulty=3, log=True).play()
+# initialize and solve the board
+Board(difficulty=3, mark_flags=True).play()

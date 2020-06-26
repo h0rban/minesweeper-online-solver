@@ -6,11 +6,16 @@ from selenium import webdriver
 from selenium.webdriver.remote.webelement import WebElement
 
 
+# returns one random element from the given set
+def get_one_random(s: set):
+    return random.sample(s, 1)[0]
+
+
 # represents a MineSweeper Board
 class Board:
 
     # constructor
-    def __init__(self, difficulty: int, log: bool) -> None:
+    def __init__(self, difficulty: int, log: bool = True, mark_flags: bool = False) -> None:
 
         start_t = time.time()
 
@@ -19,11 +24,12 @@ class Board:
 
         # define dimensions
         rows, cols, mines, link = Info.DIFFICULTIES[difficulty - 1]
-        driver = webdriver.Chrome(Info.DRIVER_PATH)
+        driver: webdriver = webdriver.Chrome(Info.DRIVER_PATH)
         driver.get(link)
 
         # assign fields
         self.log: bool = log
+        self.mark_flags: bool = mark_flags
         self.rows: int = rows
         self.cols: int = cols
         self.mines: int = mines
@@ -39,29 +45,29 @@ class Board:
         self.init_fields_and_cells()
 
         if log:
-            print(f'{round(time.time() - start_t, 3)} seconds to initialize a board with {self.rows * self.cols} cells')
+            print(f'\t{round(time.time() - start_t, 3)} seconds to initialize a board with'
+                  f' {self.rows * self.cols} cells')
 
     # main game loop
     def play(self) -> None:
-
-        # todo add a check method that asserts that sets are of certain
-        #  length, that each cell has no bombs that its integer
-        #  assert that the field parameters changed by this much
-
         while not len(self.blank) == 0:
-            to_flag = self.get_cells_to_flag()
-            to_reveal = self.get_cells_to_reveal()
-            if len(to_flag) == 0 and len(to_reveal) == 0:
-                if self.log:
-                    print("REVEALING RANDOM")
-                self.reveal_random()
-            else:
+            to_flag: set = self.get_cells_to_flag()
+            if not len(to_flag) == 0:
+                print('FLAGGING')
                 self.flag_all(to_flag)
-                self.reveal_all(to_reveal)
+            else:
+                to_reveal: set = self.get_cells_to_reveal()
+                if not len(to_reveal) == 0:
+                    print('REVEALING')
+                    self.reveal_all(to_reveal)
+                else:
+                    if self.log:
+                        print(Info.LOG_REVEAL_RANDOM)
+                    self.reveal_random()
 
+        # todo remove later
         while True:
-            # todo check for alert
-            print('Not Implemented')
+            x = 1
 
     # resets the board's sets and cells
     def reset_game(self) -> None:
@@ -84,19 +90,38 @@ class Board:
 
     # reveals a random cell from the blank set
     def reveal_random(self) -> None:
-        # todo pick one with least probability, among blank
-        #  neighbors of numbers and the rest of the field / num bombs
-        cell = random.sample(self.blank, 1)[0]
-        cell.click()
-        self.update_from({cell})
+
+        no_numbers: set = set(filter(lambda c: len(c.non_zero_number_neighbors()) == 0, self.blank))
+
+        # account for the case when set has length zero and yields a zero probability
+        if len(no_numbers) == 0:
+            lowest_prob: float = 1
+            random_cell: Cell = get_one_random(self.blank)
+        else:
+            # todo find a way to subtract the number of bombs accounted for in the workset
+            lowest_prob: float = (self.mines - len(self.bombs)) / len(no_numbers)
+            random_cell: Cell = get_one_random(no_numbers)
+
+        for cell in self.workset:
+            blank: set = cell.blank_neighbors()
+            if len(blank) == 0:
+                continue
+            else:
+                prob: float = cell.bombs_remaining() / len(blank)
+                if prob < lowest_prob:
+                    lowest_prob = prob
+                    random_cell = get_one_random(blank)
+
+        random_cell.click()
+        self.update_from({random_cell})
 
     # initialize the board's matrix, blank set with cells
     def init_fields_and_cells(self) -> None:
         # initialize matrix and blank set
         for row in range(self.rows):
-            row_to_add = []
+            row_to_add: list = []
             for col in range(self.cols):
-                cell = Cell(row, col, self.driver)
+                cell: Cell = Cell(row, col, self.driver)
                 row_to_add.append(cell)
                 self.blank.add(cell)
             self.matrix.append(row_to_add)
@@ -110,17 +135,17 @@ class Board:
     # flags all cells in the given set
     def flag_all(self, to_flag: set) -> None:
         for cell in to_flag:
-            cell.flag()
+            cell.flag(self.mark_flags)
             self.blank.discard(cell)
             self.bombs.add(cell)
 
     # updates the cells from a set of cells
     def update_from(self, workset: set) -> None:
         start_time = time.time()
-        counter = 0
-        visited = set()
+        counter: int = 0
+        visited: set = set()
         while not len(workset) == 0:
-            popped = workset.pop()
+            popped: Cell = workset.pop()
             if popped not in visited:
                 visited.add(popped)
                 updated, boom = popped.update()
@@ -135,7 +160,7 @@ class Board:
                         self.workset.add(popped)
                     counter += 1
         if self.log:
-            print(f'{round(time.time() - start_time, 3)} seconds to update {counter} cells')
+            print(f'\t{round(time.time() - start_time, 3)} seconds to update {counter} cells')
 
     # reveals all cells in the given set
     def reveal_all(self, to_reveal: set) -> None:
@@ -150,7 +175,7 @@ class Board:
                 self.numbers.add(cell)
             print('THE GAME SHOULD BE COMPLETE')
         else:
-            to_update = set()
+            to_update: set = set()
             for cell in to_reveal:
                 cell.click()
                 to_update.add(cell)
@@ -158,20 +183,19 @@ class Board:
 
     # returns a set of cells to flag
     def get_cells_to_flag(self) -> set:
-        to_flag = set()
+        to_flag: set = set()
         for cell in self.workset:
             to_flag |= cell.get_neighbors_to_flag()
         return to_flag
 
     # returns a set of cells to reveal
     def get_cells_to_reveal(self) -> set:
-        to_reveal = set()
-        to_discard = set()
+        to_reveal: set = set()
+        to_discard: set = set()
         for cell in self.workset:
-            cell_exhausted, neighbors = cell.get_neighbors_to_reveal()
-            if cell_exhausted:
+            exhausted, neighbors = cell.get_neighbors_to_reveal()
+            if exhausted:
                 to_discard.add(cell)
-            # this has to be outside of if because can have cells to reveal without being exhausted
             to_reveal |= neighbors
         # discards the exhausted cells from the workset
         self.workset = self.workset.difference(to_discard)
@@ -187,15 +211,15 @@ class Board:
         # total = blank + bombs + numbers
         # return f'{blank}\t{bombs}\t{numbers}\t{total}\t\t{workset}'
 
-        out = f'Board(rows = {self.rows},\n' \
-              + f'\tcols = {self.cols}\n' \
-              + f'\tmines = {self.mines}\n' \
-              + f'\tblank.size = {len(self.blank)}\n' \
-              + f'\tbombs.size = {len(self.bombs)}\n' \
-              + f'\tnumbers.size = {len(self.numbers)}\n' \
-              + f'\tworkset.size = {len(self.workset)}\n' \
-              + f'\tMatrix as String:\n'
-        field = ''
+        out: str = f'Board(rows = {self.rows},\n' \
+                   + f'\tcols = {self.cols}\n' \
+                   + f'\tmines = {self.mines}\n' \
+                   + f'\tblank.size = {len(self.blank)}\n' \
+                   + f'\tbombs.size = {len(self.bombs)}\n' \
+                   + f'\tnumbers.size = {len(self.numbers)}\n' \
+                   + f'\tworkset.size = {len(self.workset)}\n' \
+                   + f'\tMatrix as String:\n'
+        field: str = ''
         for row in self.matrix:
             field += '\t\t'
             for cell in row:
