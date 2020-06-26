@@ -13,6 +13,12 @@ def get_one_random(s: set):
 
 # represents a MineSweeper Board
 class Board:
+    # global dictionary of actions for logging purposes
+    ACTIONS: dict = {'flag': Info.LOG_FLAG,
+                     'reveal': Info.LOG_REVEAL,
+                     'random': Info.LOG_REVEAL_RANDOM,
+                     'reset': Info.LOG_GAME_RESET,
+                     'complete': Info.LOG_GAME_COMPLETE}
 
     # constructor
     def __init__(self, difficulty: int, log: bool = True, mark_flags: bool = False) -> None:
@@ -43,26 +49,23 @@ class Board:
 
         # initialize fields and cells todo is this a good idea to call this here?
         self.init_fields_and_cells()
-
-        if log:
-            print(f'\t{round(time.time() - start_t, 3)} seconds to initialize a board with'
-                  f' {self.rows * self.cols} cells')
+        self.log_action(f'\t{round(time.time() - start_t, 3)} seconds to initialize '
+                        + f'a board with {self.rows * self.cols} cells')
 
     # main game loop
     def play(self) -> None:
         while not len(self.blank) == 0:
             to_flag: set = self.get_cells_to_flag()
             if not len(to_flag) == 0:
-                print('FLAGGING')
+                self.log_action('flag')
                 self.flag_all(to_flag)
             else:
                 to_reveal: set = self.get_cells_to_reveal()
                 if not len(to_reveal) == 0:
-                    print('REVEALING')
+                    self.log_action('reveal')
                     self.reveal_all(to_reveal)
                 else:
-                    if self.log:
-                        print(Info.LOG_REVEAL_RANDOM)
+                    self.log_action('random')
                     self.reveal_random()
 
         # todo remove later
@@ -71,10 +74,7 @@ class Board:
 
     # resets the board's sets and cells
     def reset_game(self) -> None:
-
-        if self.log:
-            print(Info.LOG_GAME_RESET)
-
+        self.log_action('reset')
         # click face to restart the game
         self.face.click()
         # clear sets
@@ -90,9 +90,7 @@ class Board:
 
     # reveals a random cell from the blank set
     def reveal_random(self) -> None:
-
         no_numbers: set = set(filter(lambda c: len(c.non_zero_number_neighbors()) == 0, self.blank))
-
         # account for the case when set has length zero and yields a zero probability
         if len(no_numbers) == 0:
             lowest_prob: float = 1
@@ -101,17 +99,13 @@ class Board:
             # todo find a way to subtract the number of bombs accounted for in the workset
             lowest_prob: float = (self.mines - len(self.bombs)) / len(no_numbers)
             random_cell: Cell = get_one_random(no_numbers)
-
         for cell in self.workset:
             blank: set = cell.blank_neighbors()
-            if len(blank) == 0:
-                continue
-            else:
+            if not len(blank) == 0:
                 prob: float = cell.bombs_remaining() / len(blank)
                 if prob < lowest_prob:
                     lowest_prob = prob
                     random_cell = get_one_random(blank)
-
         random_cell.click()
         self.update_from({random_cell})
 
@@ -131,6 +125,11 @@ class Board:
                 cell.assign_neighbors(
                     # returns a set of cells at the given posns
                     set([self.matrix[posn.row][posn.col] for posn in cell.neighbors_posns(self.rows, self.cols)]))
+
+    # if log is turned on returns the print out associated with the given action
+    def log_action(self, action: str) -> None:
+        if self.log:
+            print(self.ACTIONS.get(action, action))
 
     # flags all cells in the given set
     def flag_all(self, to_flag: set) -> None:
@@ -159,8 +158,7 @@ class Board:
                     if popped.should_add_to_workset():
                         self.workset.add(popped)
                     counter += 1
-        if self.log:
-            print(f'\t{round(time.time() - start_time, 3)} seconds to update {counter} cells')
+        self.log_action(f'\t{round(time.time() - start_time, 3)} seconds to update {counter} cells')
 
     # reveals all cells in the given set
     def reveal_all(self, to_reveal: set) -> None:
@@ -173,7 +171,7 @@ class Board:
                 cell.click()
                 self.blank.discard(cell)
                 self.numbers.add(cell)
-            print('THE GAME SHOULD BE COMPLETE')
+            self.log_action('complete')
         else:
             to_update: set = set()
             for cell in to_reveal:

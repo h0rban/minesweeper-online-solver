@@ -8,7 +8,7 @@ from selenium.webdriver.remote.webelement import WebElement
 # represents a cell on the MineSweeper board
 class Cell:
     # global variable
-    ATTRIBUTES = Info.REPS
+    ATTRIBUTES: dict = Info.REPS
 
     # constructor
     def __init__(self, row: int, col: int, driver: webdriver) -> None:
@@ -28,6 +28,16 @@ class Cell:
             raise NotImplementedError
         else:
             self.neighbors = neighbors
+
+    # flags this cell as a bomb
+    def flag(self, mark_flags: bool) -> None:
+        if not self.blank:
+            raise NotImplementedError
+        else:
+            self.bomb = True
+            self.blank = False
+            if mark_flags:
+                ActionChains(self.driver).context_click(self.pointer).perform()
 
     # converts this cell from blank to a number cell
     def to_number(self) -> None:
@@ -56,15 +66,62 @@ class Cell:
             except Exception as ex:
                 raise ex
 
-    # flags this cell as a bomb
-    def flag(self, mark_flags: bool) -> None:
-        if not self.blank:
+    # returns a set of bomb neighbors
+    def bomb_neighbors(self) -> set:
+        return set(filter(lambda neighbor: neighbor.bomb, self.neighbors))
+
+    # returns a set of blank neighbors
+    def blank_neighbors(self) -> set:
+        return set(filter(lambda neighbor: neighbor.blank, self.neighbors))
+
+    # returns a set of blank neighbors to flag based on a more complex logic
+    def get_more_to_flag(self) -> set:
+        pattern_flag: set = set()
+        for neighbor in self.non_zero_number_neighbors():
+            dif: set = neighbor.blank_neighbors().difference(self.blank_neighbors())
+            if len(dif) == neighbor.bombs_remaining() - self.bombs_remaining():
+                pattern_flag |= dif
+        return pattern_flag
+
+    # returns a set of blank neighbors to reveal based on a more complex logic
+    def get_more_to_reveal(self) -> set:
+        this_blank: set = self.blank_neighbors()
+        pattern_reveal: set = set()
+        for neighbor in self.non_zero_number_neighbors():
+            other_blank: set = neighbor.blank_neighbors()
+            is_sub_set: bool = len(this_blank) > 0 and this_blank.issubset(other_blank)
+            eq_remaining: bool = self.bombs_remaining() == neighbor.bombs_remaining()
+            dif: set = other_blank.difference(this_blank)
+            dif_over_zero: bool = len(dif) > 0
+            if is_sub_set and eq_remaining and dif_over_zero:
+                pattern_reveal |= dif
+        return pattern_reveal
+
+    # returns a set of blank neighbors if we can flag them and an empty set otherwise
+    def get_neighbors_to_flag(self) -> set:
+        this_blank: set = self.blank_neighbors()
+        return this_blank if len(this_blank) == self.bombs_remaining() else self.get_more_to_flag()
+
+    # returns a set of number neighbors whose number is greater than 0
+    def non_zero_number_neighbors(self) -> set:
+        return set(filter(lambda neighbor: neighbor.number and neighbor.get_number() > 0, self.neighbors))
+
+    # returns hash code for this cell based on it's position
+    def __hash__(self) -> int:
+        x: int = self.posn.col
+        y: int = self.posn.row
+        return ((x + y) * (x + y + 1) // 2) + y
+
+    # returns an integer of this cell on the board
+    def get_number(self) -> int:
+        if not self.number:
             raise NotImplementedError
         else:
-            self.bomb = True
-            self.blank = False
-            if mark_flags:
-                ActionChains(self.driver).context_click(self.pointer).perform()
+            return self.cell_integer
+
+    # returns the number of bombs to be found remaining that are neighbors of this cell
+    def bombs_remaining(self) -> int:
+        return self.cell_integer - len(self.bomb_neighbors())
 
     # returns a string representation of this Cell
     def __str__(self) -> str:
@@ -86,49 +143,6 @@ class Cell:
             return self.attribute
         except Exception as ex:
             raise ex
-
-    # returns hash code for this cell based on it's position
-    def __hash__(self) -> int:
-        x: int = self.posn.col
-        y: int = self.posn.row
-        return ((x + y) * (x + y + 1) // 2) + y
-
-    # returns an integer of this cell on the board
-    def get_number(self) -> int:
-        if not self.number:
-            raise NotImplementedError
-        else:
-            return self.cell_integer
-
-    # returns the number of bombs to be found remaining that are neighbors of this cell
-    def bombs_remaining(self) -> int:
-        return self.cell_integer - len(self.bomb_neighbors())
-
-    # returns a set of bomb neighbors
-    def bomb_neighbors(self) -> set:
-        return set(filter(lambda neighbor: neighbor.bomb, self.neighbors))
-
-    # returns a set of blank neighbors
-    def blank_neighbors(self) -> set:
-        return set(filter(lambda neighbor: neighbor.blank, self.neighbors))
-
-    # returns a set of blank neighbors to flag based on a more complex logic
-    def get_more_to_flag(self) -> set:
-        pattern_flag: set = set()
-        for neighbor in self.non_zero_number_neighbors():
-            dif: set = neighbor.blank_neighbors().difference(self.blank_neighbors())
-            if len(dif) == neighbor.bombs_remaining() - self.bombs_remaining():
-                pattern_flag |= dif
-        return pattern_flag
-
-    # returns a set of blank neighbors if we can flag them and an empty set otherwise
-    def get_neighbors_to_flag(self) -> set:
-        this_blank: set = self.blank_neighbors()
-        return this_blank if len(this_blank) == self.bombs_remaining() else self.get_more_to_flag()
-
-    # returns a set of number neighbors whose number is greater than 0
-    def non_zero_number_neighbors(self) -> set:
-        return set(filter(lambda neighbor: neighbor.number and neighbor.get_number() > 0, self.neighbors))
 
     # has this cell changed its attribute and was there an explosion?
     def update(self) -> tuple:
@@ -153,20 +167,6 @@ class Cell:
             return True, self.blank_neighbors()
         else:
             return False, self.get_more_to_reveal()
-
-    # returns a set of blank neighbors to reveal based on a more complex logic
-    def get_more_to_reveal(self) -> set:
-        this_blank: set = self.blank_neighbors()
-        pattern_reveal: set = set()
-        for neighbor in self.non_zero_number_neighbors():
-            other_blank: set = neighbor.blank_neighbors()
-            is_sub_set: bool = len(this_blank) > 0 and this_blank.issubset(other_blank)
-            eq_remaining: bool = self.bombs_remaining() == neighbor.bombs_remaining()
-            dif: set = other_blank.difference(this_blank)
-            dif_over_zero: bool = len(dif) > 0
-            if is_sub_set and eq_remaining and dif_over_zero:
-                pattern_reveal |= dif
-        return pattern_reveal
 
     # returns whether this cell's integer is greater than one and it has blank neighbors
     def should_add_to_workset(self) -> bool:
