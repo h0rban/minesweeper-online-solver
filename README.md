@@ -12,12 +12,15 @@ Minesweeper Online Solver with Selenium and Python
 
 ![MineSweeperOnline demo](https://raw.githubusercontent.com/h0rban/MineSweeperOnlineSolver/master/solver_example.gif)
 
-
+### API
+```pyhton
+Board(difficulty=3, log=True, mark_flags=True).play()
+```
 
 ### Todos
 - Combining Python inheritance with mutation of the existing objects
+- Account the relationship of number cells neighboring through the blank cell and improve probability
 - Optimize computation by storing the results
-- Account the relationship of number cells neighboring through the blank cell
 - Selenium alert and error handling
 - More tests
 
@@ -25,6 +28,3 @@ Minesweeper Online Solver with Selenium and Python
 - Fun
 - Competition with my girlfriend
 - Prove that I can do better with code than manually
-
- 
-
