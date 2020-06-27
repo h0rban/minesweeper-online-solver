@@ -11,7 +11,7 @@
 **Demo**
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/h0rban/MineSweeperOnlineSolver/master/solver_example.gif" alt="MineSweeperOnline demo" height="300"/>
+  <img src="https://raw.githubusercontent.com/h0rban/MineSweeperOnlineSolver/master/solver_example.gif" alt="MineSweeperOnline demo" height="400"/>
 </p>
 
 
