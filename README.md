@@ -1,8 +1,6 @@
 
 # MineSweeperOnlineSolver
-[Minesweeper Online](http://minesweeperonline.com/) Solver with Selenium and Python
-
-Solver strategy is a generalized version of this [guide](http://www.minesweeper.info/wiki/Strategy)
+[Minesweeper Online](http://minesweeperonline.com/) Solver with Selenium and Python. Solver strategy is a generalized version of this [guide](http://www.minesweeper.info/wiki/Strategy)
 
 ### How to run
 - Modify 'DRIVER_PATH' to match the location of your webdriver in Info.py. I am using chromium that I downloaded from the link saved in Info.py as DRIVER_LINK.
