@@ -24,7 +24,7 @@ Board(difficulty=3, log=True, mark_flags=True).play()
 
 ### Todos
 - Combining Python inheritance with mutation of the existing objects
-- Account the relationship of number cells neighboring through the blank cell and improve probability
+- Account for the relationship of number cells neighboring through the blank cell and improve probability
 - Optimize computation by storing the results
 - Selenium alert and error handling
 - More tests
