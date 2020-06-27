@@ -1,6 +1,7 @@
 
 # MineSweeperOnlineSolver
 [Minesweeper Online](http://minesweeperonline.com/) Solver with Selenium and Python
+
 Solver strategy is a generalized version of this [guide](http://www.minesweeper.info/wiki/Strategy)
 
 ### How to run
