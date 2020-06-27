@@ -1,6 +1,6 @@
 
 # MineSweeperOnlineSolver
-Minesweeper Online Solver with Selenium and Python
+[Minesweeper Online](http://minesweeperonline.com/) Solver with Selenium and Python
 
 ### How to run
 - Modify 'DRIVER_PATH' to match the location of your webdriver in Info.py. I am using chromium that I downloaded from the link saved in Info.py as DRIVER_LINK.
