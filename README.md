@@ -10,7 +10,7 @@ Minesweeper Online Solver with Selenium and Python
 
 **Demo**
 
-![MineSweeperOnline demo](insert link here)
+![MineSweeperOnline demo](https://raw.githubusercontent.com/h0rban/MineSweeperOnlineSolver/master/solver_example.gif)
 
 
 
