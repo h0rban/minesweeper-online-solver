@@ -10,7 +10,10 @@
 
 **Demo**
 
-![MineSweeperOnline demo](https://raw.githubusercontent.com/h0rban/MineSweeperOnlineSolver/master/solver_example.gif)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/h0rban/MineSweeperOnlineSolver/master/solver_example.gif" alt="MineSweeperOnline demo" height="300"/>
+</p>
+
 
 ### API
 ```pyhton
