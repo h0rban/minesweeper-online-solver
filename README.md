@@ -17,7 +17,12 @@
 
 ### API
 ```pyhton
+from Board import Board
 Board(difficulty=3, log=True, mark_flags=True).play()
+```
+```pyhton
+from Board import Board
+Board(2).play()
 ```
 
 ### Todos
