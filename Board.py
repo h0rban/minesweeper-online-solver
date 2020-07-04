@@ -1,3 +1,4 @@
+import os
 import time
 import Info
 import random
@@ -21,7 +22,7 @@ class Board:
                      'complete': Info.LOG_GAME_COMPLETE}
 
     # constructor
-    def __init__(self, difficulty: int, log: bool = True, mark_flags: bool = False) -> None:
+    def __init__(self, difficulty: int = 3, log: bool = True, mark_flags: bool = False) -> None:
 
         start_t = time.time()
 
@@ -30,7 +31,7 @@ class Board:
 
         # define dimensions
         rows, cols, mines, link = Info.DIFFICULTIES[difficulty - 1]
-        driver: webdriver = webdriver.Chrome(Info.DRIVER_PATH)
+        driver: webdriver = webdriver.Chrome(os.path.join(os.getcwd(), 'chromedriver'))
         driver.get(link)
 
         # assign fields
