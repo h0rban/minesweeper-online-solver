@@ -30,6 +30,8 @@ Board().play()
 - Optimize computation by storing the results
 - Selenium alert and error handling
 - More tests
+- Use Enums
+- Change design to follow Strategy pattern
 
 ### Why
 - Fun
