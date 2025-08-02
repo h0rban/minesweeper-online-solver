@@ -3,6 +3,7 @@ from Posn import Posn
 from selenium import webdriver
 from selenium.webdriver import ActionChains
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.common.by import By
 
 
 # represents a cell on the MineSweeper board
@@ -20,7 +21,7 @@ class Cell:
         self.posn: Posn = Posn(row, col)
         self.neighbors: set = set()
         self.driver: webdriver = driver
-        self.pointer: WebElement = driver.find_element_by_id(f'{row + 1}_{col + 1}')
+        self.pointer: WebElement = driver.find_element(By.ID, f'{row + 1}_{col + 1}')
 
     # sets the neighbors of this cell (only once)
     def assign_neighbors(self, neighbors: set) -> None:

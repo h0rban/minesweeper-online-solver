@@ -5,11 +5,12 @@ import random
 from Cell import Cell
 from selenium import webdriver
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.common.by import By
 
 
 # returns one random element from the given set
 def get_one_random(s: set):
-    return random.sample(s, 1)[0]
+    return random.sample(list(s), 1)[0]
 
 
 # represents a MineSweeper Board
@@ -31,7 +32,7 @@ class Board:
 
         # define dimensions
         rows, cols, mines, link = Info.DIFFICULTIES[difficulty - 1]
-        driver: webdriver = webdriver.Chrome(os.path.join(os.getcwd(), 'chromedriver'))
+        driver: webdriver = webdriver.Chrome()
         driver.get(link)
 
         # assign fields
@@ -46,7 +47,7 @@ class Board:
         self.workset: set = set()
         self.matrix: list = list()
         self.driver: webdriver = driver
-        self.face: WebElement = driver.find_element_by_id('face')
+        self.face: WebElement = driver.find_element(By.ID, 'face')
 
         # initialize fields and cells todo is this a good idea to call this here?
         self.init_fields_and_cells()
